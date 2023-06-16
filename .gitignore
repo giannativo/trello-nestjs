@@ -36,3 +36,9 @@ lerna-debug.log*
 
 # Sqlite
 *.sqlite
+
+# DB volume
+/postgres-instance
+
+# ENV file
+.env

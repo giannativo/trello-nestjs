@@ -1,0 +1,10 @@
+### Create a new message
+POST http://localhost:3000/cards/trello-manager
+content-type: application/json
+
+{
+  "type": "issue",
+  "title": "this is a card title",
+  "description": "this is a card description"
+}
+
