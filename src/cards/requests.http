@@ -1,4 +1,4 @@
-### Create a new message
+### Create a new issue
 POST http://localhost:3000/cards/trello-manager
 content-type: application/json
 
@@ -8,3 +8,36 @@ content-type: application/json
   "description": "this is a card description"
 }
 
+### Create a new bug
+POST http://localhost:3000/cards/trello-manager
+content-type: application/json
+
+{
+  "type": "bug",
+  "description": "this is a bug description"
+}
+
+### Create a new task
+POST http://localhost:3000/cards/trello-manager
+content-type: application/json
+
+{
+  "type": "task",
+  "title": "this is a task title",
+  "category": "maintenance"
+}
+
+### Get all issues
+GET http://localhost:3000/cards/trello-manager/issue
+
+### Get all bugs
+GET http://localhost:3000/cards/trello-manager/bug
+
+### Get all tasks
+GET http://localhost:3000/cards/trello-manager/task
+
+### Get card
+GET http://localhost:3000/cards/trello-manager/task/1
+
+### Delete card
+DELETE http://localhost:3000/cards/trello-manager/task/1

@@ -1,12 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCardDto } from './dtos/create-card.dto';
 import { CardType } from './cards.enum';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { BugCard } from './entities/bug.card.entity';
-import { TaskCard } from './entities/task.card.entity';
 import { PrismaService } from 'src/prisma.service';
-import { IssueCard, Prisma } from '@prisma/client';
+import { IssueCard, TaskCard, BugCard, Prisma } from '@prisma/client';
 
 /**
  * This service is responsible for creating, reading and deleting cards.
@@ -25,13 +21,15 @@ export class CardsService {
      * @returns {Promise<IssueCard | TaskCard | BugCard>} The created card.
      */
     async createCard(card: CreateCardDto) {
-        switch (card.type) {
+        let cardType = card.type;
+        delete card['type'];
+        switch (cardType) {
             case CardType.ISSUE:
                 return await this.createIssueCard(card as Prisma.IssueCardCreateInput);
             case CardType.TASK:
-                return await this.createTaskCard(card);
+                return await this.createTaskCard(card as Prisma.TaskCardCreateInput);
             case CardType.BUG:
-                return await this.createBugCard(card);
+                return await this.createBugCard(card as Prisma.BugCardCreateInput);
         };
     }
 
@@ -55,10 +53,7 @@ export class CardsService {
      */
     async createIssueCard(data: Prisma.IssueCardCreateInput) {
         this.validateIssueCard
-        delete data['type'];
-        return await this.prisma.issueCard.create({
-            data,
-          });
+        return await this.prisma.issueCard.create({data});
     }
 
     /**
@@ -79,10 +74,9 @@ export class CardsService {
      * @param card - The card to be created.
      * @returns {Promise<TaskCard>} The created card.
      */
-    async createTaskCard(card: CreateCardDto) {
+    async createTaskCard(data: Prisma.TaskCardCreateInput) {
         this.validateTaskCard
-/*        const taskCard = this.taskCardRepository.create(card);
-        return await this.taskCardRepository.save(taskCard);*/
+        return await this.prisma.taskCard.create({data});
     }
 
     /**
@@ -104,11 +98,9 @@ export class CardsService {
      * @returns {Promise<BugCard>} The created card.
      * @todo Generate a random title function.
      */
-    async createBugCard(card: CreateCardDto) {
-        this.validateBugCard(card);
-        card.title = 'Bug'+'-'+'RandomWord'+'-'+ Math.floor(Math.random() * 1000);
-/*        const bugCard = this.bugCardRepository.create(card);
-        return await this.bugCardRepository.save(bugCard);*/
+    async createBugCard(data: Prisma.BugCardCreateInput) {
+        data.title = 'Bug'+'-'+'RandomWord'+'-'+ Math.floor(Math.random() * 1000);
+        return await this.prisma.bugCard.create({data});
     }
 
     /**
@@ -117,8 +109,15 @@ export class CardsService {
      * @param {CardType} type - The type of card.
      * @returns {Promise<IssueCard[] | TaskCard[] | BugCard[]>} The cards of the given type.
      */
-    async getCards(type: CardType) {
-//        return this.getCardRepository(type).find();
+    async getCards(cardType: CardType) {
+        switch (cardType['type']) {
+            case CardType.ISSUE:
+                return this.prisma.issueCard.findMany({});
+            case CardType.TASK:
+                return this.prisma.taskCard.findMany({});
+            case CardType.BUG:
+                return this.prisma.bugCard.findMany({});
+        };
     }
 
     /**
@@ -128,8 +127,21 @@ export class CardsService {
      * @param {number} id - The id of the card.
      * @returns {Promise<IssueCard | TaskCard | BugCard>} The card of the given type and id.
      */
-    async getCard(type: CardType, id: number) {
-//        return this.getCardRepository(type).findOneBy({id});
+    async getCard(cardType: CardType, id: number) {
+        switch (cardType) {
+            case CardType.ISSUE:
+                return this.prisma.issueCard.findUnique({
+                    where: {id: Number(id)},
+                  });
+            case CardType.TASK:
+                return this.prisma.taskCard.findUnique({
+                    where: {id: Number(id)},
+                  })
+            case CardType.BUG:
+                return this.prisma.bugCard.findUnique({
+                    where: {id: Number(id)},
+                  })
+        };
     }
 
     /**
@@ -141,28 +153,23 @@ export class CardsService {
      * @throws {NotFoundException} - If the card is not found.
      */
     async deleteCard(type: CardType, id: number) {
-/*        const repo = this.getCardRepository(type);
-        let card = await repo.findOneBy({id})
+        let card = await this.getCard(type, id);
         if (!card) {
             throw new NotFoundException('Card not found');
         }
-        return repo.delete(card.id);*/
-    }
-
-    /**
-     * This method returns the repository of a given type of card.
-     * 
-     * @param {CardType} type - The type of card.
-     * @returns {Repository<IssueCard> | Repository<TaskCard> | Repository<BugCard>} The repository of the given type of card.
-     */
-    private getCardRepository(type: CardType) {
-/*        switch (type) {
+        switch (type) {
             case CardType.ISSUE:
-                return this.issueCardRepository;
+                return this.prisma.issueCard.delete({
+                    where: {id: Number(id)},
+                  });
             case CardType.TASK:
-                return this.taskCardRepository;
+                return this.prisma.taskCard.delete({
+                    where: {id: Number(id)},
+                  })
             case CardType.BUG:
-                return this.bugCardRepository;
-        };*/
+                return this.prisma.bugCard.delete({
+                    where: {id: Number(id)},
+                  })
+        };
     }
 }
