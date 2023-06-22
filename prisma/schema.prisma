@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model TaskCard {
+  id    Int     @default(autoincrement()) @id
+  title String
+  category  CardCategory
+}
+
+model BugCard {
+  id    Int     @default(autoincrement()) @id
+  title String
+  description  String
+}
+
+model IssueCard {
+  id    Int     @default(autoincrement()) @id
+  title String
+  description  String
+}
+
+enum CardCategory {
+    maintenance
+    research
+    test
+}

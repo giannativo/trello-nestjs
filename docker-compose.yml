@@ -1,0 +1,21 @@
+version: "2.1"
+
+services:
+  postgres:
+    container_name: postgres-instance
+    restart: always
+    image: postgres:15.3
+    environment:
+      - POSTGRES_MULTIPLE_DATABASES=trello_nestjs
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgress
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres-instance:/var/lib/postgresql/data
+    healthcheck:
+      test: "pg_isready -U postgres -d trello_nestjs"
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 5432:5432
